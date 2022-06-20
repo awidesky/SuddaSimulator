@@ -2,15 +2,13 @@ package main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Random;
+import java.util.stream.Stream;
 
 public class Main {
 
-	private static final ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	
 	public static long N = 40000000; 
-	public static int taskNum = 10; //tasks that each thread will have. You can devide tasks so that if one thread is finished and another is busy, that thread can fork the task.  
 	
 	private static final ArrayList<Card> deck = new ArrayList<>(20);
 	private static ArrayList<String> genealogy;
@@ -30,16 +28,28 @@ public class Main {
 		
 	}
 	
+	public static boolean playGame(Pair p) {
+		
+		if(special) {
+			
+		}
+		
+		
+		return true;
+	}
+	
 	public static void main(String[] args) {
 
-		final long n = N / (Runtime.getRuntime().availableProcessors() * taskNum);
-		for(int i = 0; i < Runtime.getRuntime().availableProcessors() * taskNum; i++) {
-			pool.execute(() -> {
-				for(int j = 0; j < n; j++) {
-					
-				}
-			});
-		}
+		long t = System.currentTimeMillis();
+		
+		long win = Stream.generate(() -> {
+			int[] arr = new Random().ints(0, 20).distinct().limit(2).toArray();
+			return new Pair(deck.get(arr[0]), deck.get(arr[1]));
+		}).limit(N).parallel().map(Main::playGame).filter(Boolean::booleanValue).count();
+
+		t = System.currentTimeMillis() - t;
+		
+		System.out.println(win + " / " + N + "(" + (100.0 * win/N) +"%)\nIn" + t + "ms");
 		
 	}
 
@@ -51,5 +61,16 @@ class Card {
 	public final int type;
 	
 	public Card(int n, int t) { num = n; type = t; }
-	
+	public String getGenealogy() {
+		return "";
+	}
+}
+
+class Pair {
+	public Card a;
+	public Card b;
+	public Pair(Card a, Card b) {
+		this.a = a;
+		this.b = b;
+	}
 }
