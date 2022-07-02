@@ -1,56 +1,71 @@
 package main;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Main {
 
 	
-	public static long N = 40000000; 
+	public static final long N = 40; 
+	public static final boolean verbose = true;
 	
-	private static final ArrayList<Card> deck = new ArrayList<>(20);
-	private static ArrayList<String> genealogy;
-	private static boolean special = true;
+	public static int player = 5; 
+	private static final Card[] deck = new Card[] { new Card(1, 0), new Card(1, 1), new Card(2, 0), new Card(2, 1), new Card(3, 0), new Card(3, 1), new Card(4, 0), new Card(4, 1), new Card(5, 0), new Card(5, 1), new Card(6, 0), new Card(6, 1), new Card(7, 0), new Card(7, 1), new Card(8, 0), new Card(8, 1), new Card(9, 0), new Card(9, 1), new Card(10, 0), new Card(10, 1)};
 	
-	static {
-		for(int i = 1; i < 21; i++) {
-			deck.add(new Card(i, 0));
-			deck.add(new Card(i, 1));
-		}
-		
-		
-		genealogy = new ArrayList<>(Arrays.asList("ÇÑ²ı", "µÎ²ı", "¼¼²ı", "³×²ı", "´Ù¼¸²ı", "¿©¼¸²ı", "ÀÏ°ö²ı", "¿©´ü²ı", "¾ÆÈ©³¡", "°©¿À", "¼¼·ú", "Àå»ç", "Àå»æ", "±¸»æ", "µ¶»ç", "¾Ë¸®", "1¶¯", "2¶¯", "3¶¯", "4¶¯", "5¶¯", "6¶¯", "7¶¯", "8¶¯", "9¶¯", "Àå¶¯", "13±¤¶¯", "18±¤¶¯", "38±¤¶¯")); special = true;
-		//genealogy = new ArrayList<>(Arrays.asList("ÇÑ²ı", "µÎ²ı", "¼¼²ı", "³×²ı", "´Ù¼¸²ı", "¿©¼¸²ı", "ÀÏ°ö²ı", "¿©´ü²ı", "¾ÆÈ©³¡", "°©¿À", "1¶¯", "2¶¯", "3¶¯", "4¶¯", "5¶¯", "6¶¯", "7¶¯", "8¶¯", "9¶¯", "Àå¶¯", "13±¤¶¯", "18±¤¶¯", "38±¤¶¯")); special = true;
-		//genealogy = new ArrayList<>(Arrays.asList("ÇÑ²ı", "µÎ²ı", "¼¼²ı", "³×²ı", "´Ù¼¸²ı", "¿©¼¸²ı", "ÀÏ°ö²ı", "¿©´ü²ı", "¾ÆÈ©³¡", "°©¿À", "1¶¯", "2¶¯", "3¶¯", "4¶¯", "5¶¯", "6¶¯", "7¶¯", "8¶¯", "9¶¯", "Àå¶¯", "13±¤¶¯", "18±¤¶¯", "38±¤¶¯"));
-		//genealogy = new ArrayList<>(Arrays.asList("ÇÑ²ı", "µÎ²ı", "¼¼²ı", "³×²ı", "´Ù¼¸²ı", "¿©¼¸²ı", "ÀÏ°ö²ı", "¿©´ü²ı", "¾ÆÈ©³¡", "°©¿À", "1¶¯", "2¶¯", "3¶¯", "4¶¯", "5¶¯", "6¶¯", "7¶¯", "8¶¯", "9¶¯", "Àå¶¯"));
-		
-	}
+	public static ConcurrentHashMap<String, Integer> cnt = null;
 	
-	public static boolean playGame(Pair p) {
-		
-		if(special) {
-			
-		}
-		
-		
-		return true;
-	}
+	public static LoggerThread logger = null;
 	
 	public static void main(String[] args) {
 
+		try {
+			new File(".\\logs").mkdir();
+			logger = new LoggerThread(new FileOutputStream(new File(".\\logs\\" + new SimpleDateFormat("yyyy-MM-dd-kk-mm-ss").format(new Date()) + ".txt")));
+			logger.start();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		if(verbose) {
+			cnt = new ConcurrentHashMap<>();
+		}
+		
 		long t = System.currentTimeMillis();
 		
-		long win = Stream.generate(() -> {
-			int[] arr = new Random().ints(0, 20).distinct().limit(2).toArray();
-			return new Pair(deck.get(arr[0]), deck.get(arr[1]));
-		}).limit(N).parallel().map(Main::playGame).filter(Boolean::booleanValue).count();
+		long win = Stream.generate(Main::makeGame).limit(N).parallel().map(Game::play).filter(Boolean::booleanValue).count();
 
 		t = System.currentTimeMillis() - t;
+
+		String result = win + " / " + N + "  (" + (100.0 * win/N) +"%)\nIn " + t + "ms";
+		System.out.println(result);
 		
-		System.out.println(win + " / " + N + "(" + (100.0 * win/N) +"%)\nIn" + t + "ms");
+		logger.log(result);
+		logger.kill(1000);
 		
+	}
+	
+	
+	public static Game makeGame() {
+		return new VanillaGame(makePlayer());
+	}
+	
+	public static Player[] makePlayer() {
+		Player[] pairs = new Player[player];
+		for (int i = 0; i < player; i++) {
+			int[] arr = new Random().ints(0, 20).distinct().limit(2).toArray();
+			pairs[i] = new Player(deck[arr[0]], deck[arr[1]]);
+		}
+		return pairs;
 	}
 
 }
@@ -64,13 +79,168 @@ class Card {
 	public String getGenealogy() {
 		return "";
 	}
+	
+	@Override
+	public int hashCode() {
+		return num * 10 + type;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!(obj instanceof Card)) {
+			return false;
+		}
+		return obj.hashCode() == hashCode();
+	}
 }
 
-class Pair {
+class Player {
 	public Card a;
 	public Card b;
-	public Pair(Card a, Card b) {
+	public String myHand = null;
+	
+	public Player(Card a, Card b) {
 		this.a = a;
 		this.b = b;
+	}
+
+	public String getHand() {
+		return myHand;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(a, b, myHand);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Player) {
+			Player other = (Player) obj;
+			return Objects.equals(a, other.a) && Objects.equals(b, other.b) && Objects.equals(myHand, other.myHand);
+		} else if (obj instanceof String) {
+			return obj.equals(myHand);
+		} else {
+			return false;
+		}
+	}
+	
+	
+	
+}
+
+
+abstract class Game {
+	
+	protected static ArrayList<String> genealogy;
+	
+	public Player[] players;
+	protected StringBuffer log = null;
+	
+	public Game(Player[] pairs) {
+		players = pairs;
+		if(Main.verbose) {
+			log = new StringBuffer();
+			log.append("\nNew Game :\n");
+		}
+	}
+	
+	public boolean play() {
+		
+		for(Player p : players) {
+			if(p.a.num == p.b.num) {
+				p.myHand = p.a.num + "ë•¡";
+			} else {
+				p.myHand = ((p.a.num + p.b.num) % 10) + "ë—";
+			}
+		}
+		
+		if(Main.verbose) {
+			log.append(Arrays.stream(players).map(Player::getHand).collect(Collectors.joining(", ")));
+			log.append("\n");
+			boolean result = start();
+			log.append("result : ");
+			log.append(result ? "win" : "lose");
+			//log.append("\n");
+			Main.logger.log(log.toString());
+			return result;
+		} else {
+			return start();
+		}
+			
+	}
+	
+	public abstract boolean start();
+
+}
+
+
+class VanillaGame extends Game {
+	static {
+		genealogy = new ArrayList<>(Arrays.asList("0ë—", "1ë—", "2ë—", "3ë—", "4ë—", "5ë—", "6ë—", "7ë—", "8ë—", "9ë—", "1ë•¡", "2ë•¡", "3ë•¡", "4ë•¡", "5ë•¡", "6ë•¡", "7ë•¡", "8ë•¡", "9ë•¡", "10ë•¡"));
+	}
+	public VanillaGame(Player[] pairs) { super(pairs); }
+	
+	@Override
+	public boolean start() {
+		
+		int myHandInt = -1;
+		boolean sameHandExists = false;
+		
+		for(Player p : players) {
+			int index = genealogy.indexOf(p.myHand);
+			if(Main.verbose) {
+				Main.cnt.putIfAbsent(p.myHand, 0);
+			}
+			if(myHandInt != -1) {
+				if(myHandInt < index) {
+					return false;
+				}
+				if(myHandInt == index) {
+					sameHandExists = true;
+				}
+			} else {
+				myHandInt = index;
+			}
+		}
+		if(sameHandExists) {
+			players = Main.makePlayer();
+			if(Main.verbose) log.append("Draw. rematch.\n");
+			return play();
+		}
+		
+		return true;
+	}
+}
+
+class MyGame extends Game {
+	static {
+		genealogy = new ArrayList<>(Arrays.asList("0ë—", "1ë—", "2ë—", "3ë—", "4ë—", "5ë—", "6ë—", "7ë—", "8ë—", "9ë", "1ë•¡", "2ë•¡", "3ë•¡", "4ë•¡", "5ë•¡", "6ë•¡", "7ë•¡", "8ë•¡", "9ë•¡", "10ë•¡", "13ê´‘ë•¡", "18ê´‘ë•¡", "38ê´‘ë•¡"));
+	}
+	public MyGame(Player[] pairs) { super(pairs); }
+	
+	@Override
+	public boolean start() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+}
+
+class PMangGame extends Game {
+	static {
+		genealogy = new ArrayList<>(Arrays.asList("0ë—", "1ë—", "2ë—", "3ë—", "4ë—", "5ë—", "6ë—", "7ë—", "8ë—", "9ë", "ì„¸ë¥™", "ì¥ì‚¬", "ì¥ì‚¥", "êµ¬ì‚¥", "ë…ì‚¬", "ì•Œë¦¬", "1ë•¡", "2ë•¡", "3ë•¡", "4ë•¡", "5ë•¡", "6ë•¡", "7ë•¡", "8ë•¡", "9ë•¡", "10ë•¡", "13ê´‘ë•¡", "18ê´‘ë•¡", "38ê´‘ë•¡"));
+	}
+	public PMangGame(Player[] pairs) { super(pairs); }
+	
+	@Override
+	public boolean start() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
