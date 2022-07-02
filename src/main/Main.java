@@ -23,7 +23,6 @@ public class Main {
 	
 	
 	public static LoggerThread logger = null;
-	public static int[] cnt = null;
 	
 	public static void main(String[] args) {
 
@@ -44,9 +43,6 @@ public class Main {
 		String result = win + " / " + N + "  (" + (100.0 * win/N) +"%)\nIn " + t + "ms";
 		System.out.println(result);
 		
-		System.out.println(VanillaGame.genealogy.stream().collect(Collectors.joining(", ")));
-		System.out.println(Arrays.stream(cnt).mapToObj(String::valueOf).collect(Collectors.joining(" , ")));
-		
 		logger.log(result);
 		logger.kill(1000);
 		
@@ -66,12 +62,6 @@ public class Main {
 		return pairs;
 	}
 
-	public static void cntUp(int i) {
-		synchronized (cnt) {
-			cnt[i]++;
-		}
-	}
-	
 }
 
 class Card {
@@ -150,7 +140,6 @@ abstract class Game {
 	public Game(Player[] pairs) {
 		players = pairs;
 		if(Main.verbose) {
-			Main.cnt = new int[genealogy.size()];;
 			log = new StringBuffer();
 			log.append("\nNew Game :\n");
 		}
@@ -168,9 +157,6 @@ abstract class Game {
 		}
 		
 		if(Main.verbose) {
-			for(Player p : players) {
-				Main.cntUp(genealogy.indexOf(p.myHand));
-			}
 			log.append(Arrays.stream(players).map(Player::getHand).collect(Collectors.joining(", ")));
 			log.append("\n");
 			boolean result = start();
