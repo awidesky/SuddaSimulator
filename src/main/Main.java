@@ -9,22 +9,21 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Main {
 
 	
-	public static final long N = 40; 
+	public static final long N = 4000; 
 	public static final boolean verbose = true;
 	
 	public static int player = 5; 
 	private static final Card[] deck = new Card[] { new Card(1, 0), new Card(1, 1), new Card(2, 0), new Card(2, 1), new Card(3, 0), new Card(3, 1), new Card(4, 0), new Card(4, 1), new Card(5, 0), new Card(5, 1), new Card(6, 0), new Card(6, 1), new Card(7, 0), new Card(7, 1), new Card(8, 0), new Card(8, 1), new Card(9, 0), new Card(9, 1), new Card(10, 0), new Card(10, 1)};
 	
-	public static ConcurrentHashMap<String, Integer> cnt = null;
 	
 	public static LoggerThread logger = null;
+	public static int[] cnt = null;
 	
 	public static void main(String[] args) {
 
@@ -36,10 +35,6 @@ public class Main {
 			e.printStackTrace();
 		}
 		
-		if(verbose) {
-			cnt = new ConcurrentHashMap<>();
-		}
-		
 		long t = System.currentTimeMillis();
 		
 		long win = Stream.generate(Main::makeGame).limit(N).parallel().map(Game::play).filter(Boolean::booleanValue).count();
@@ -48,6 +43,9 @@ public class Main {
 
 		String result = win + " / " + N + "  (" + (100.0 * win/N) +"%)\nIn " + t + "ms";
 		System.out.println(result);
+		
+		System.out.println(VanillaGame.genealogy.stream().collect(Collectors.joining(", ")));
+		System.out.println(Arrays.stream(cnt).mapToObj(String::valueOf).collect(Collectors.joining(" , ")));
 		
 		logger.log(result);
 		logger.kill(1000);
@@ -68,6 +66,12 @@ public class Main {
 		return pairs;
 	}
 
+	public static void cntUp(int i) {
+		synchronized (cnt) {
+			cnt[i]++;
+		}
+	}
+	
 }
 
 class Card {
@@ -138,7 +142,7 @@ class Player {
 
 abstract class Game {
 	
-	protected static ArrayList<String> genealogy;
+	public static ArrayList<String> genealogy;
 	
 	public Player[] players;
 	protected StringBuffer log = null;
@@ -146,10 +150,12 @@ abstract class Game {
 	public Game(Player[] pairs) {
 		players = pairs;
 		if(Main.verbose) {
+			Main.cnt = new int[genealogy.size()];;
 			log = new StringBuffer();
 			log.append("\nNew Game :\n");
 		}
 	}
+	
 	
 	public boolean play() {
 		
@@ -162,6 +168,9 @@ abstract class Game {
 		}
 		
 		if(Main.verbose) {
+			for(Player p : players) {
+				Main.cntUp(genealogy.indexOf(p.myHand));
+			}
 			log.append(Arrays.stream(players).map(Player::getHand).collect(Collectors.joining(", ")));
 			log.append("\n");
 			boolean result = start();
@@ -195,9 +204,6 @@ class VanillaGame extends Game {
 		
 		for(Player p : players) {
 			int index = genealogy.indexOf(p.myHand);
-			if(Main.verbose) {
-				Main.cnt.putIfAbsent(p.myHand, 0);
-			}
 			if(myHandInt != -1) {
 				if(myHandInt < index) {
 					return false;
