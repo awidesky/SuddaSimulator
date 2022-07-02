@@ -15,10 +15,11 @@ import java.util.stream.Stream;
 public class Main {
 
 	
-	public static final long N = 4000; 
-	public static final boolean verbose = true;
+	public static final long GAMEPERLOOP = 400000L; 
+	public static final int NUMOFLOOP = 100; 
+	public static final boolean verbose = false;
+	public static final int PLAYER = 5; 
 	
-	public static int player = 5; 
 	private static final Card[] deck = new Card[] { new Card(1, 0), new Card(1, 1), new Card(2, 0), new Card(2, 1), new Card(3, 0), new Card(3, 1), new Card(4, 0), new Card(4, 1), new Card(5, 0), new Card(5, 1), new Card(6, 0), new Card(6, 1), new Card(7, 0), new Card(7, 1), new Card(8, 0), new Card(8, 1), new Card(9, 0), new Card(9, 1), new Card(10, 0), new Card(10, 1)};
 	
 	
@@ -26,25 +27,39 @@ public class Main {
 	
 	public static void main(String[] args) {
 
-		try {
-			new File(".\\logs").mkdir();
-			logger = new LoggerThread(new FileOutputStream(new File(".\\logs\\" + new SimpleDateFormat("yyyy-MM-dd-kk-mm-ss").format(new Date()) + ".txt")));
-			logger.start();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+		if (verbose) {
+			try {
+				new File(".\\logs").mkdir();
+				FileOutputStream fo = new FileOutputStream(new File(".\\logs\\" + new SimpleDateFormat("yyyy-MM-dd-kk-mm-ss").format(new Date()) + ".txt"));
+				logger = new LoggerThread(fo);
+				logger.start();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+
+		long total = 0L;
+		long timeSum = 0L;
+		for (int i = 0; i < NUMOFLOOP; i++) {
+			long t = System.currentTimeMillis();
+
+			long win = Stream.generate(Main::makeGame).limit(GAMEPERLOOP).parallel().map(Game::play).filter(Boolean::booleanValue)
+					.count();
+
+			t = System.currentTimeMillis() - t;
+
+			total += win;
+			timeSum += t;
+			String result = String.format("#%0" + String.valueOf(NUMOFLOOP).length() + "d %" + String.valueOf(GAMEPERLOOP).length() + "d",i + 1 , win) + " / " + GAMEPERLOOP + "  " + String.format("(%6.3f)%%  in %5dms", 100.0 * win / GAMEPERLOOP, t);
+			System.out.println(result);
+			if (verbose) logger.log(result);
 		}
 		
-		long t = System.currentTimeMillis();
+		System.out.println();
+		System.out.println(100.0 * total / (NUMOFLOOP * GAMEPERLOOP) + "% avg when " + PLAYER + " players.");
+		System.out.println("avg " + (timeSum / NUMOFLOOP) + "ms");
 		
-		long win = Stream.generate(Main::makeGame).limit(N).parallel().map(Game::play).filter(Boolean::booleanValue).count();
-
-		t = System.currentTimeMillis() - t;
-
-		String result = win + " / " + N + "  (" + (100.0 * win/N) +"%)\nIn " + t + "ms";
-		System.out.println(result);
-		
-		logger.log(result);
-		logger.kill(1000);
+		if (verbose) logger.kill(1000);
 		
 	}
 	
@@ -54,8 +69,8 @@ public class Main {
 	}
 	
 	public static Player[] makePlayer() {
-		Player[] pairs = new Player[player];
-		for (int i = 0; i < player; i++) {
+		Player[] pairs = new Player[PLAYER];
+		for (int i = 0; i < PLAYER; i++) {
 			int[] arr = new Random().ints(0, 20).distinct().limit(2).toArray();
 			pairs[i] = new Player(deck[arr[0]], deck[arr[1]]);
 		}
