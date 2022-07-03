@@ -131,6 +131,9 @@ class MyGame extends VanillaGame {
 			}
 		}
 		super.setup();
+		for(Player p : players) {
+			if(genealogy.indexOf(p.getHand()) >= genealogy.indexOf("장땡")) rematch = false;
+		}
 	}
 	
 }
