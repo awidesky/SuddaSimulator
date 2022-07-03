@@ -56,6 +56,34 @@ class VanillaGame extends Game {
 		
 		setup();
 		
+		int replayNum = Main.PLAYER;
+		boolean result = true;
+		if(!rematch) { //predefined re-match hand exists
+			result = showDown();
+			if(rematch) replayNum = (int)Arrays.stream(players).filter((p) -> p.getHand().equals(players[0].getHand())).count();
+		}
+		
+		if(result && rematch) {
+			
+			players = Main.makePlayer(replayNum);
+			if(Main.verbose) {log.append("Draw. rematch.\n");}
+			rematch = false;
+			return play();
+		}
+		
+		if (Main.verbose) {
+			log.append("result : ");
+			log.append(result ? "win" : "lose");
+			Main.logger.log(log.toString());
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Show down all players, and check who got highest hand
+	 * */
+	protected boolean showDown() {
 		int myHandInt = -1;
 		boolean result = true;
 		
@@ -73,32 +101,18 @@ class VanillaGame extends Game {
 				myHandInt = index;
 			}
 		}
-		if(result && rematch) {
-			int replayNum = (int)Arrays.stream(players).filter((p) -> p.getHand().equals(players[0].getHand())).count();
-			players = Main.makePlayer(replayNum);
-			if(Main.verbose) {log.append("Draw. rematch.\n");}
-			rematch = false;
-			return play();
-		}
-		
-		if (Main.verbose) {
-			log.append("result : ");
-			log.append(result ? "win" : "lose");
-			Main.logger.log(log.toString());
-		}
-		
 		return result;
 	}
 }
 
-class MyGame extends Game {
+class MyGame extends VanillaGame {
 	static {
 		genealogy = new ArrayList<>(Arrays.asList("0끗", "1끗", "2끗", "3끗", "4끗", "5끗", "6끗", "7끗", "8끗", "9끗", "1땡", "2땡", "3땡", "4땡", "5땡", "6땡", "7땡", "8땡", "9땡", "10땡", "13광땡", "18광땡", "38광땡"));
 	}
 	
 	private Card[] gwag13 = new Card[]{ new Card(1, 1), new Card(3, 1)};
-	private Card[] gwag18 = new Card[]{ new Card(1, 1), new Card(8, 1)};
-	private Card[] gwag38 = new Card[]{ new Card(3, 1), new Card(8, 1)};
+	private Card[] gwag18 = new Card[]{ new Card(1, 1), new Card(8, 0)};
+	private Card[] gwag38 = new Card[]{ new Card(3, 1), new Card(8, 0)};
 	
 	public MyGame(Player[] pairs) { super(pairs); }
 	
@@ -119,10 +133,6 @@ class MyGame extends Game {
 		super.setup();
 	}
 	
-	@Override
-	public boolean play() {
-		return false;
-	}
 }
 
 class PMangGame extends Game {

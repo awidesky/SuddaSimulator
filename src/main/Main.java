@@ -14,7 +14,7 @@ public class Main {
 	
 	public static final long GAMEPERLOOP = 40000L; 
 	public static final int NUMOFLOOP = 100; 
-	public static final boolean verbose = true;
+	public static final boolean verbose = false;
 	public static final int PLAYER = 5; 
 	
 	private static final Card[] deck = new Card[] { new Card(1, 0), new Card(1, 1), new Card(2, 0), new Card(2, 1), new Card(3, 0), new Card(3, 1), new Card(4, 0), new Card(4, 1), new Card(5, 0), new Card(5, 1), new Card(6, 0), new Card(6, 1), new Card(7, 0), new Card(7, 1), new Card(8, 0), new Card(8, 1), new Card(9, 0), new Card(9, 1), new Card(10, 0), new Card(10, 1)};
@@ -65,7 +65,7 @@ public class Main {
 	}
 	
 	public static Game makeGame() {
-		return new VanillaGame(makePlayer());
+		return new MyGame(makePlayer());
 	}
 	
 	public static Player[] makePlayer() {
@@ -85,7 +85,7 @@ public class Main {
 class Card {
 	
 	public final int num;
-	public final int type; //0 is normal, 1 is special(열끗)
+	public final int type; //0 is normal, 1 is special(열끗 + 1, 3광)
 	
 	public Card(int n, int t) { num = n; type = t; }
 	public String getGenealogy() {
@@ -105,12 +105,19 @@ class Card {
 		if (!(obj instanceof Card)) {
 			return false;
 		}
-		return obj.hashCode() == hashCode();
+		Card c = (Card)obj;
+		boolean a = obj.hashCode() == hashCode();
+		boolean b = (num == c.num) && (type == c.type);
+		if(a != b) System.out.println(this.toString() + " and " + c.toString() + a + " " + b);
+		return b;
 	}
 	public boolean equals(int num) {
 		if(this.num == num) return true;
 		else return false;
 	}
+	
+	@Override
+	public String toString() { return num + ":" + type; }
 }
 
 class Player {
