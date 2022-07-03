@@ -48,18 +48,21 @@ public class Main {
 			total += win;
 			timeSum += t;
 			String result = String.format("#%0" + String.valueOf(NUMOFLOOP).length() + "d %" + String.valueOf(GAMEPERLOOP).length() + "d",i + 1 , win) + " / " + GAMEPERLOOP + "  " + String.format("(%6.3f)%%  in %5dms", 100.0 * win / GAMEPERLOOP, t);
-			System.out.println(result);
-			if (verbose) logger.log(result);
+			log(result);
 		}
 		
-		System.out.println();
-		System.out.println(100.0 * total / (NUMOFLOOP * GAMEPERLOOP) + "% avg when " + PLAYER + " players.");
-		System.out.println("avg " + (timeSum / NUMOFLOOP) + "ms");
+		log("\n");
+		log(100.0 * total / (NUMOFLOOP * GAMEPERLOOP) + "% avg when " + PLAYER + " players.");
+		log("avg " + (timeSum / NUMOFLOOP) + "ms");
 		
 		if (verbose) logger.kill(1000);
 		
 	}
 	
+	public static void log(String str) {
+		System.out.println(str);
+		if(verbose) logger.log(str);
+	}
 	
 	public static Game makeGame() {
 		return new VanillaGame(makePlayer());

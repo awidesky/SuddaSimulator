@@ -20,7 +20,7 @@ public abstract class Game {
 	}
 	
 	
-	public boolean setup() {
+	protected void setup() {
 		
 		for(Player p : players) {
 			if(p.a.num == p.b.num) {
@@ -33,13 +33,8 @@ public abstract class Game {
 		if(Main.verbose) {
 			log.append(Arrays.stream(players).map(Player::getHand).collect(Collectors.joining(", ")));
 			log.append("\n");
-		} 
-		boolean result = play();
-		if(Main.verbose) {
-			//log.append("\n");
-			Main.logger.log(log.toString());
 		}
-		return result;
+		
 	}
 	
 	public abstract boolean play();
@@ -54,7 +49,9 @@ class VanillaGame extends Game {
 	public VanillaGame(Player[] pairs) { super(pairs); }
 	
 	@Override
-	public boolean play() { //재귀말고 반복으로
+	public boolean play() {
+		
+		setup();
 		
 		int myHandInt = -1;
 		boolean sameHandExists = false;
@@ -74,16 +71,20 @@ class VanillaGame extends Game {
 				myHandInt = index;
 			}
 		}
-		if(sameHandExists) {
+		if(result && sameHandExists) {
 			int replayNum = (int)Arrays.stream(players).filter((p) -> p.getHand().equals(players[0].getHand())).count();
 			players = Main.makePlayer(replayNum);
 			if(Main.verbose) log.append("Draw. rematch.\n");
-			return setup();
+			setup();
+			return play();
 		}
+		
 		if (Main.verbose) {
 			log.append("result : ");
 			log.append(result ? "win" : "lose");
+			Main.logger.log(log.toString());
 		}
+		
 		return result;
 	}
 }
