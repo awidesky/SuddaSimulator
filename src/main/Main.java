@@ -4,20 +4,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Main {
 
 	
-	public static final long GAMEPERLOOP = 400000L; 
+	public static final long GAMEPERLOOP = 4000L; 
 	public static final int NUMOFLOOP = 100; 
-	public static final boolean verbose = false;
+	public static final boolean verbose = true;
 	public static final int PLAYER = 5; 
 	
 	private static final Card[] deck = new Card[] { new Card(1, 0), new Card(1, 1), new Card(2, 0), new Card(2, 1), new Card(3, 0), new Card(3, 1), new Card(4, 0), new Card(4, 1), new Card(5, 0), new Card(5, 1), new Card(6, 0), new Card(6, 1), new Card(7, 0), new Card(7, 1), new Card(8, 0), new Card(8, 1), new Card(9, 0), new Card(9, 1), new Card(10, 0), new Card(10, 1)};
@@ -69,7 +66,10 @@ public class Main {
 	}
 	
 	public static Player[] makePlayer() {
-		Player[] pairs = new Player[PLAYER];
+		return makePlayer(NUMOFLOOP);
+	}
+	public static Player[] makePlayer(int playerNum) {
+		Player[] pairs = new Player[playerNum];
 		for (int i = 0; i < PLAYER; i++) {
 			int[] arr = new Random().ints(0, 20).distinct().limit(2).toArray();
 			pairs[i] = new Player(deck[arr[0]], deck[arr[1]]);
@@ -144,110 +144,3 @@ class Player {
 	
 }
 
-
-abstract class Game {
-	
-	public static ArrayList<String> genealogy;
-	
-	public Player[] players;
-	protected StringBuffer log = null;
-	
-	public Game(Player[] pairs) {
-		players = pairs;
-		if(Main.verbose) {
-			log = new StringBuffer();
-			log.append("\nNew Game :\n");
-		}
-	}
-	
-	
-	public boolean play() {
-		
-		for(Player p : players) {
-			if(p.a.num == p.b.num) {
-				p.myHand = p.a.num + "땡";
-			} else {
-				p.myHand = ((p.a.num + p.b.num) % 10) + "끗";
-			}
-		}
-		
-		if(Main.verbose) {
-			log.append(Arrays.stream(players).map(Player::getHand).collect(Collectors.joining(", ")));
-			log.append("\n");
-			boolean result = start();
-			log.append("result : ");
-			log.append(result ? "win" : "lose");
-			//log.append("\n");
-			Main.logger.log(log.toString());
-			return result;
-		} else {
-			return start();
-		}
-			
-	}
-	
-	public abstract boolean start();
-
-}
-
-
-class VanillaGame extends Game {
-	static {
-		genealogy = new ArrayList<>(Arrays.asList("0끗", "1끗", "2끗", "3끗", "4끗", "5끗", "6끗", "7끗", "8끗", "9끗", "1땡", "2땡", "3땡", "4땡", "5땡", "6땡", "7땡", "8땡", "9땡", "10땡"));
-	}
-	public VanillaGame(Player[] pairs) { super(pairs); }
-	
-	@Override
-	public boolean start() {
-		
-		int myHandInt = -1;
-		boolean sameHandExists = false;
-		
-		for(Player p : players) {
-			int index = genealogy.indexOf(p.myHand);
-			if(myHandInt != -1) {
-				if(myHandInt < index) {
-					return false;
-				}
-				if(myHandInt == index) {
-					sameHandExists = true;
-				}
-			} else {
-				myHandInt = index;
-			}
-		}
-		if(sameHandExists) {
-			players = Main.makePlayer();
-			if(Main.verbose) log.append("Draw. rematch.\n");
-			return play();
-		}
-		
-		return true;
-	}
-}
-
-class MyGame extends Game {
-	static {
-		genealogy = new ArrayList<>(Arrays.asList("0끗", "1끗", "2끗", "3끗", "4끗", "5끗", "6끗", "7끗", "8끗", "9끝", "1땡", "2땡", "3땡", "4땡", "5땡", "6땡", "7땡", "8땡", "9땡", "10땡", "13광땡", "18광땡", "38광땡"));
-	}
-	public MyGame(Player[] pairs) { super(pairs); }
-	
-	@Override
-	public boolean start() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-}
-
-class PMangGame extends Game {
-	static {
-		genealogy = new ArrayList<>(Arrays.asList("0끗", "1끗", "2끗", "3끗", "4끗", "5끗", "6끗", "7끗", "8끗", "9끝", "세륙", "장사", "장삥", "구삥", "독사", "알리", "1땡", "2땡", "3땡", "4땡", "5땡", "6땡", "7땡", "8땡", "9땡", "10땡", "13광땡", "18광땡", "38광땡"));
-	}
-	public PMangGame(Player[] pairs) { super(pairs); }
-	
-	@Override
-	public boolean start() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-}
