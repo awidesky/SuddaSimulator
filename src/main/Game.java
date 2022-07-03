@@ -10,6 +10,7 @@ public abstract class Game {
 	
 	public Player[] players;
 	protected StringBuffer log = null;
+	protected boolean rematch = false;
 	
 	public Game(Player[] pairs) {
 		players = pairs;
@@ -23,6 +24,8 @@ public abstract class Game {
 	protected void setup() {
 		
 		for(Player p : players) {
+			if(p.getHand() != null) continue; // If hand is predefined in override method, skip it 
+			
 			if(p.a.num == p.b.num) {
 				p.setHand(p.a.num + "땡");
 			} else {
@@ -54,7 +57,6 @@ class VanillaGame extends Game {
 		setup();
 		
 		int myHandInt = -1;
-		boolean sameHandExists = false;
 		boolean result = true;
 		
 		for(Player p : players) {
@@ -65,16 +67,17 @@ class VanillaGame extends Game {
 					break;
 				}
 				if(myHandInt == index) {
-					sameHandExists = true;
+					rematch = true;
 				}
 			} else {
 				myHandInt = index;
 			}
 		}
-		if(result && sameHandExists) {
+		if(result && rematch) {
 			int replayNum = (int)Arrays.stream(players).filter((p) -> p.getHand().equals(players[0].getHand())).count();
 			players = Main.makePlayer(replayNum);
 			if(Main.verbose) {log.append("Draw. rematch.\n");}
+			rematch = false;
 			return play();
 		}
 		
@@ -90,20 +93,41 @@ class VanillaGame extends Game {
 
 class MyGame extends Game {
 	static {
-		genealogy = new ArrayList<>(Arrays.asList("0끗", "1끗", "2끗", "3끗", "4끗", "5끗", "6끗", "7끗", "8끗", "9끝", "1땡", "2땡", "3땡", "4땡", "5땡", "6땡", "7땡", "8땡", "9땡", "10땡", "13광땡", "18광땡", "38광땡"));
+		genealogy = new ArrayList<>(Arrays.asList("0끗", "1끗", "2끗", "3끗", "4끗", "5끗", "6끗", "7끗", "8끗", "9끗", "1땡", "2땡", "3땡", "4땡", "5땡", "6땡", "7땡", "8땡", "9땡", "10땡", "13광땡", "18광땡", "38광땡"));
 	}
+	
+	private Card[] gwag13 = new Card[]{ new Card(1, 1), new Card(3, 1)};
+	private Card[] gwag18 = new Card[]{ new Card(1, 1), new Card(8, 1)};
+	private Card[] gwag38 = new Card[]{ new Card(3, 1), new Card(8, 1)};
+	
 	public MyGame(Player[] pairs) { super(pairs); }
 	
 	@Override
+	protected void setup() {
+		for(Player p : players) {
+			if((p.a.equals(4) && p.b.equals(9)) || (p.a.equals(9) && p.b.equals(4))) {
+				p.setHand("사구");
+				rematch = true;
+			} else if(p.equals(gwag13)) {
+				p.setHand("13광땡");
+			} else if(p.equals(gwag18)) {
+				p.setHand("18광땡");
+			} else if(p.equals(gwag38)) {
+				p.setHand("38광땡");
+			}
+		}
+		super.setup();
+	}
+	
+	@Override
 	public boolean play() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 }
 
 class PMangGame extends Game {
 	static {
-		genealogy = new ArrayList<>(Arrays.asList("0끗", "1끗", "2끗", "3끗", "4끗", "5끗", "6끗", "7끗", "8끗", "9끝", "세륙", "장사", "장삥", "구삥", "독사", "알리", "1땡", "2땡", "3땡", "4땡", "5땡", "6땡", "7땡", "8땡", "9땡", "10땡", "13광땡", "18광땡", "38광땡"));
+		genealogy = new ArrayList<>(Arrays.asList("0끗", "1끗", "2끗", "3끗", "4끗", "5끗", "6끗", "7끗", "8끗", "9끗", "세륙", "장사", "장삥", "구삥", "독사", "알리", "1땡", "2땡", "3땡", "4땡", "5땡", "6땡", "7땡", "8땡", "9땡", "10땡", "13광땡", "18광땡", "38광땡"));
 	}
 	public PMangGame(Player[] pairs) { super(pairs); }
 	

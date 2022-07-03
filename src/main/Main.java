@@ -85,7 +85,7 @@ public class Main {
 class Card {
 	
 	public final int num;
-	public final int type;
+	public final int type; //0 is normal, 1 is special(열끗)
 	
 	public Card(int n, int t) { num = n; type = t; }
 	public String getGenealogy() {
@@ -106,6 +106,10 @@ class Card {
 			return false;
 		}
 		return obj.hashCode() == hashCode();
+	}
+	public boolean equals(int num) {
+		if(this.num == num) return true;
+		else return false;
 	}
 }
 
@@ -146,6 +150,12 @@ class Player {
 		}
 	}
 	
+	/**
+	 * Check if this player's card is exactly same as <code>pair</code>
+	 * */
+	public boolean equals(Card[] pair) {
+		return (a.equals(pair[0]) && b.equals(pair[1])) || (a.equals(pair[1]) && b.equals(pair[0]));
+	}
 	
 	
 }
