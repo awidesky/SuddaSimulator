@@ -20,32 +20,29 @@ public abstract class Game {
 	}
 	
 	
-	public boolean play() {
+	public boolean setup() {
 		
 		for(Player p : players) {
 			if(p.a.num == p.b.num) {
-				p.myHand = p.a.num + "땡";
+				p.setHand(p.a.num + "땡");
 			} else {
-				p.myHand = ((p.a.num + p.b.num) % 10) + "끗";
+				p.setHand(((p.a.num + p.b.num) % 10) + "끗");
 			}
 		}
 		
 		if(Main.verbose) {
 			log.append(Arrays.stream(players).map(Player::getHand).collect(Collectors.joining(", ")));
 			log.append("\n");
-			boolean result = start();
-			log.append("result : ");
-			log.append(result ? "win" : "lose");
+		} 
+		boolean result = play();
+		if(Main.verbose) {
 			//log.append("\n");
 			Main.logger.log(log.toString());
-			return result;
-		} else {
-			return start();
 		}
-			
+		return result;
 	}
 	
-	public abstract boolean start();
+	public abstract boolean play();
 
 }
 
@@ -57,16 +54,18 @@ class VanillaGame extends Game {
 	public VanillaGame(Player[] pairs) { super(pairs); }
 	
 	@Override
-	public boolean start() {
+	public boolean play() { //재귀말고 반복으로
 		
 		int myHandInt = -1;
 		boolean sameHandExists = false;
+		boolean result = true;
 		
 		for(Player p : players) {
-			int index = genealogy.indexOf(p.myHand);
+			int index = genealogy.indexOf(p.getHand());
 			if(myHandInt != -1) {
 				if(myHandInt < index) {
-					return false;
+					result = false;
+					break;
 				}
 				if(myHandInt == index) {
 					sameHandExists = true;
@@ -76,12 +75,16 @@ class VanillaGame extends Game {
 			}
 		}
 		if(sameHandExists) {
-			players = Main.makePlayer();
+			int replayNum = (int)Arrays.stream(players).filter((p) -> p.getHand().equals(players[0].getHand())).count();
+			players = Main.makePlayer(replayNum);
 			if(Main.verbose) log.append("Draw. rematch.\n");
-			return play();
+			return setup();
 		}
-		
-		return true;
+		if (Main.verbose) {
+			log.append("result : ");
+			log.append(result ? "win" : "lose");
+		}
+		return result;
 	}
 }
 
@@ -92,7 +95,7 @@ class MyGame extends Game {
 	public MyGame(Player[] pairs) { super(pairs); }
 	
 	@Override
-	public boolean start() {
+	public boolean play() {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -105,7 +108,7 @@ class PMangGame extends Game {
 	public PMangGame(Player[] pairs) { super(pairs); }
 	
 	@Override
-	public boolean start() {
+	public boolean play() {
 		// TODO Auto-generated method stub
 		return false;
 	}
