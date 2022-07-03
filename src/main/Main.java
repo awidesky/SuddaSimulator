@@ -14,7 +14,7 @@ public class Main {
 	
 	public static final long GAMEPERLOOP = 40000L; 
 	public static final int NUMOFLOOP = 100; 
-	public static final boolean verbose = false;
+	public static final boolean verbose = true;
 	public static final int PLAYER = 5; 
 	
 	private static final Card[] deck = new Card[] { new Card(1, 0), new Card(1, 1), new Card(2, 0), new Card(2, 1), new Card(3, 0), new Card(3, 1), new Card(4, 0), new Card(4, 1), new Card(5, 0), new Card(5, 1), new Card(6, 0), new Card(6, 1), new Card(7, 0), new Card(7, 1), new Card(8, 0), new Card(8, 1), new Card(9, 0), new Card(9, 1), new Card(10, 0), new Card(10, 1)};

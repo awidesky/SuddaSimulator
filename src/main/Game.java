@@ -74,8 +74,7 @@ class VanillaGame extends Game {
 		if(result && sameHandExists) {
 			int replayNum = (int)Arrays.stream(players).filter((p) -> p.getHand().equals(players[0].getHand())).count();
 			players = Main.makePlayer(replayNum);
-			if(Main.verbose) log.append("Draw. rematch.\n");
-			setup();
+			if(Main.verbose) {log.append("Draw. rematch.\n");}
 			return play();
 		}
 		
