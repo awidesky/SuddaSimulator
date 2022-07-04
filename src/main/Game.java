@@ -33,11 +33,6 @@ public abstract class Game {
 			}
 		}
 		
-		if(Main.verbose) {
-			log.append(Arrays.stream(players).map(Player::getHand).collect(Collectors.joining(", ")));
-			log.append("\n");
-		}
-		
 	}
 	
 	public abstract boolean play();
@@ -56,6 +51,11 @@ class VanillaGame extends Game {
 		
 		setup();
 		
+		if(Main.verbose) {
+			log.append(Arrays.stream(players).map(Player::getHand).collect(Collectors.joining(", ")));
+			log.append("\n");
+		}
+		
 		int replayNum = Main.PLAYER;
 		boolean result = true;
 		if(!rematch) { //predefined re-match hand exists
@@ -69,6 +69,7 @@ class VanillaGame extends Game {
 			if(Main.verbose) {log.append("Draw. rematch.\n");}
 			rematch = false;
 			return play();
+			
 		}
 		
 		if (Main.verbose) {
@@ -118,8 +119,9 @@ class MyGame extends VanillaGame {
 	
 	@Override
 	protected void setup() {
+		super.setup();
 		for(Player p : players) {
-			if((p.a.equals(4) && p.b.equals(9)) || (p.a.equals(9) && p.b.equals(4))) {
+			if((p.equals(4, 9))) {
 				p.setHand("사구");
 				rematch = true;
 			} else if(p.equals(gwag13)) {
@@ -130,7 +132,6 @@ class MyGame extends VanillaGame {
 				p.setHand("38광땡");
 			}
 		}
-		super.setup();
 		for(Player p : players) {
 			if(genealogy.indexOf(p.getHand()) >= genealogy.indexOf("10땡")) rematch = false;
 		}
@@ -138,15 +139,51 @@ class MyGame extends VanillaGame {
 	
 }
 
-class PMangGame extends Game {
+class PMangGame extends MyGame {
 	static {
 		genealogy = new ArrayList<>(Arrays.asList("0끗", "1끗", "2끗", "3끗", "4끗", "5끗", "6끗", "7끗", "8끗", "9끗", "세륙", "장사", "장삥", "구삥", "독사", "알리", "1땡", "2땡", "3땡", "4땡", "5땡", "6땡", "7땡", "8땡", "9땡", "10땡", "13광땡", "18광땡", "38광땡"));
 	}
+	
+	private Card[] mGosa = new Card[]{ new Card(4, 1), new Card(9, 1)}; //멍구사
+	private Card[] tKiller = new Card[]{ new Card(3, 1), new Card(7, 1)}; // 땡잡이
+	private Card[] secretAgent = new Card[]{ new Card(4, 1), new Card(7, 1)}; //암행어사
+	
 	public PMangGame(Player[] pairs) { super(pairs); }
 	
 	@Override
-	public boolean play() {
-		// TODO Auto-generated method stub
-		return false;
+	protected void setup() {
+		super.setup();
+		for(Player p : players) {
+			
+		if(p.equals(mGosa)) {
+			p.setHand("멍구사");
+			rematch = true;
+		} else if(p.equals(4, 6)) {
+			p.setHand("세륙");
+		} else if(p.equals(4, 10)) {
+			p.setHand("장사");
+		} else if(p.equals(1, 10)) {
+			p.setHand("장삥");
+		} else if(p.equals(1, 9)) {
+			p.setHand("구삥");
+		} else if(p.equals(1, 4)) {
+			p.setHand("독사");
+		} else if(p.equals(1, 2)) {
+			p.setHand("알리");
+		} else if(p.equals(tKiller)) {
+			p.setHand("땡잡이");
+			
+		} else if(p.equals(secretAgent)) {
+			p.setHand("암행어사");
+			
+		} else if(p.equals(mGosa)) {
+				p.setHand("멍구사");
+				rematch = true;
+			}
+		}
+		for(Player p : players) {
+			if(genealogy.indexOf(p.getHand()) >= genealogy.indexOf("13광땡")) rematch = false;
+		}
 	}
+
 }

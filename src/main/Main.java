@@ -85,7 +85,7 @@ public class Main {
 class Card {
 	
 	public final int num;
-	public final int type; //0 is normal, 1 is special(열끗 + 1, 3광)
+	public final int type; //0 is normal, 1 is special(�뿴�걮 + 1, 3愿�)
 	
 	public Card(int n, int t) { num = n; type = t; }
 	public String getGenealogy() {
@@ -163,7 +163,12 @@ class Player {
 	public boolean equals(Card[] pair) {
 		return (a.equals(pair[0]) && b.equals(pair[1])) || (a.equals(pair[1]) && b.equals(pair[0]));
 	}
-	
+	/**
+	 * Check if this player's cards numbers are same as parameters. Does not check card type. 
+	 * */
+	public boolean equals(int num1, int num2) {
+		return (a.equals(num1) && b.equals(num2)) || (a.equals(num2) && b.equals(num1));
+	}
 	
 }
 
