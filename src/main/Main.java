@@ -12,9 +12,9 @@ import java.util.stream.Stream;
 public class Main {
 
 	
-	public static final long GAMEPERLOOP = 40000L; 
+	public static final long GAMEPERLOOP = 4000L; 
 	public static final int NUMOFLOOP = 100; 
-	public static final boolean verbose = false;
+	public static final boolean verbose = true;
 	public static final int PLAYER = 5; 
 	
 	private static final Card[] deck = new Card[] { new Card(1, 0), new Card(1, 1), new Card(2, 0), new Card(2, 1), new Card(3, 0), new Card(3, 1), new Card(4, 0), new Card(4, 1), new Card(5, 0), new Card(5, 1), new Card(6, 0), new Card(6, 1), new Card(7, 0), new Card(7, 1), new Card(8, 0), new Card(8, 1), new Card(9, 0), new Card(9, 1), new Card(10, 0), new Card(10, 1)};
@@ -65,7 +65,7 @@ public class Main {
 	}
 	
 	public static Game makeGame() {
-		return new MyGame(makePlayer());
+		return new PMangGame(makePlayer());
 	}
 	
 	public static Player[] makePlayer() {
@@ -124,19 +124,30 @@ class Player {
 	public Card a;
 	public Card b;
 	private String myHand = null;
+	private int myHandIndex = -1;
+	
 	
 	public Player(Card a, Card b) {
 		this.a = a;
 		this.b = b;
 	}
 
-	public void setHand(String hand) {
-		myHand = hand;
-	}
 	public String getHand() {
 		return myHand;
 	}
 	
+	public void setHand(String hand) {
+		myHand = hand;
+	}
+	
+	public int getMyHandIndex() {
+		return myHandIndex;
+	}
+
+	public void setMyHandIndex(int myHandIndex) {
+		this.myHandIndex = myHandIndex;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(a, b, myHand);
