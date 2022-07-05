@@ -31,6 +31,7 @@ public abstract class Game {
 			} else {
 				p.setHand(((p.a.num + p.b.num) % 10) + "끗");
 			}
+			p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 		}
 		
 	}
@@ -52,9 +53,10 @@ class VanillaGame extends Game {
 	public boolean play() {
 		
 		setup();
-		Arrays.stream(players).forEach(p -> p.setMyHandIndex(genealogy.indexOf(p.getHand())));
 		
 		if(Main.verbose) {
+			log.append(Arrays.stream(players).map(Player::getMyHandIndex).map(String::valueOf).collect(Collectors.joining(",  ")));
+			log.append("\n");
 			log.append(Arrays.stream(players).map(Player::getHand).collect(Collectors.joining(", ")));
 			log.append("\n");
 		}
@@ -90,12 +92,12 @@ class VanillaGame extends Game {
 	 * Show down all players, and check who got highest hand
 	 * */
 	protected boolean showDown() {
-		int myHandInt = -1;
+		int myHandInt = -2;
 		boolean result = true;
 		
 		for(Player p : players) {
-			int index = genealogy.indexOf(p.getHand());
-			if(myHandInt != -1) {
+			int index = p.getMyHandIndex();
+			if(myHandInt != -2) {
 				if(myHandInt < index) {
 					result = false;
 					break;
@@ -120,24 +122,32 @@ class MyGame extends VanillaGame {
 	private Card[] gwag18 = new Card[]{ new Card(1, 1), new Card(8, 0)};
 	private Card[] gwag38 = new Card[]{ new Card(3, 1), new Card(8, 0)};
 	
+	private static String saguLimit = "9땡";
+	
 	public MyGame(Player[] pairs) { super(pairs); }
 	
 	@Override
 	protected void setup() {
 		super.setup();
+		boolean sagu = false;
 		for(Player p : players) {
 			if((p.equals(4, 9))) {
 				p.setHand("사구");
-				if(Arrays.stream(players).map(Player::getHand).map(genealogy::indexOf).allMatch(index -> index < genealogy.indexOf("10땡"))) {
-					rematch = true;
-				}
+				sagu = true;
 			} else if(p.equals(gwag13)) {
 				p.setHand("13광땡");
+				p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 			} else if(p.equals(gwag18)) {
 				p.setHand("18광땡");
+				p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 			} else if(p.equals(gwag38)) {
 				p.setHand("38광땡");
+				p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 			}
+		}
+		
+		if(sagu && Arrays.stream(players).map(Player::getHand).map(genealogy::indexOf).allMatch(index -> index <= genealogy.indexOf(saguLimit))) {
+			rematch = true;
 		}
 		
 	}
@@ -170,28 +180,34 @@ class PMangGame extends MyGame {
 				}
 			} else if (p.equals(4, 6)) {
 				p.setHand("세륙");
+				p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 			} else if (p.equals(4, 10)) {
 				p.setHand("장사");
+				p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 			} else if (p.equals(1, 10)) {
 				p.setHand("장삥");
+				p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 			} else if (p.equals(1, 9)) {
 				p.setHand("구삥");
+				p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 			} else if (p.equals(1, 4)) {
 				p.setHand("독사");
+				p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 			} else if (p.equals(1, 2)) {
 				p.setHand("알리");
+				p.setMyHandIndex(genealogy.indexOf(p.getHand()));
 			} else if (p.equals(tKiller)) {
 				p.setHand("땡잡이");
-				if (Arrays.stream(players).map(Player::getHand).filter(s -> !s.equals("땡잡이")).map(genealogy::indexOf).filter(i -> i > -1).anyMatch(index -> genealogy.indexOf("1땡") <= index && index <= genealogy.indexOf("9땡")) 
-						&& Arrays.stream(players).skip(1).map(Player::getHand).map(genealogy::indexOf).allMatch(index -> index < genealogy.indexOf("10땡"))) {
+				if (Arrays.stream(players).map(Player::getHand).filter(s -> !s.equals("땡잡이")).map(genealogy::indexOf).anyMatch(index -> genealogy.indexOf("1땡") <= index && index <= genealogy.indexOf("9땡")) 
+						&& Arrays.stream(players).map(Player::getHand).map(genealogy::indexOf).allMatch(index -> index < genealogy.indexOf("10땡"))) {
 					p.setMyHandIndex(genealogy.size()); //highest hand
 				} else {
 					p.setMyHandIndex(genealogy.indexOf("0끗"));
 				}
 			} else if (p.equals(secretAgent)) {
 				p.setHand("암행어사");
-				if (Arrays.stream(players).skip(1).map(Player::getHand).map(genealogy::indexOf).filter(i -> i > -1).anyMatch(index -> genealogy.indexOf("13광땡") <= index && index <= genealogy.indexOf("18광땡")) 
-						&& Arrays.stream(players).skip(1).map(Player::getHand).map(genealogy::indexOf).allMatch(index -> index < genealogy.indexOf("38광땡"))) {
+				if (Arrays.stream(players).map(Player::getHand).map(genealogy::indexOf).anyMatch(index -> genealogy.indexOf("13광땡") <= index && index <= genealogy.indexOf("18광땡")) 
+						&& Arrays.stream(players).map(Player::getHand).map(genealogy::indexOf).allMatch(index -> index < genealogy.indexOf("38광땡"))) {
 					p.setMyHandIndex(genealogy.size()); //highest hand
 				} else {
 					p.setMyHandIndex(genealogy.indexOf("1끗"));
@@ -200,6 +216,5 @@ class PMangGame extends MyGame {
 
 		}
 	}
-	 //TODO : 멍구사 두개나옴 + 사구가 1땡 이김
 
 }

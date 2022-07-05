@@ -12,18 +12,16 @@ import java.util.stream.Stream;
 public class Main {
 
 	
-	public static final long GAMEPERLOOP = 4000L; 
+	public static final long GAMEPERLOOP = 400000L; 
 	public static final int NUMOFLOOP = 100; 
-	public static final boolean verbose = true;
+	public static final boolean verbose = false;
 	public static final int PLAYER = 5; 
 	
 	private static final Card[] deck = new Card[] { new Card(1, 0), new Card(1, 1), new Card(2, 0), new Card(2, 1), new Card(3, 0), new Card(3, 1), new Card(4, 0), new Card(4, 1), new Card(5, 0), new Card(5, 1), new Card(6, 0), new Card(6, 1), new Card(7, 0), new Card(7, 1), new Card(8, 0), new Card(8, 1), new Card(9, 0), new Card(9, 1), new Card(10, 0), new Card(10, 1)};
 	
 	
 	public static LoggerThread logger = null;
-	
-	public static void main(String[] args) {
-
+	static {
 		if (verbose) {
 			try {
 				new File(".\\logs").mkdir();
@@ -34,6 +32,25 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
+
+	}
+	
+	public static void main(String[] args) {
+
+		//TODO : saguLimit에 따른 확률? 
+		start();
+		/*System.out.println(new PMangGame(new Player[] {
+				new Player(new Card(3, 1), new Card(8, 1)),
+				new Player(new Card(4, 1), new Card(7, 1)),
+				new Player(new Card(1, 1), new Card(3, 1)),
+				new Player(new Card(3, 1), new Card(4, 0)),
+				new Player(new Card(7, 1), new Card(8, 1))}).play());
+		*/
+		
+		if (verbose) logger.kill(1000);
+	}
+	
+	public static void start() {
 
 		long total = 0L;
 		long timeSum = 0L;
@@ -55,8 +72,6 @@ public class Main {
 		log(100.0 * total / (NUMOFLOOP * GAMEPERLOOP) + "% avg when " + PLAYER + " players.");
 		log("avg " + (timeSum / NUMOFLOOP) + "ms");
 		
-		if (verbose) logger.kill(1000);
-		
 	}
 	
 	public static void log(String str) {
@@ -65,17 +80,20 @@ public class Main {
 	}
 	
 	public static Game makeGame() {
-		return new PMangGame(makePlayer());
+		return new MyGame(makePlayer());
 	}
 	
 	public static Player[] makePlayer() {
 		return makePlayer(PLAYER);
 	}
 	public static Player[] makePlayer(int playerNum) {
+		
+		//Stream.generate(new Random().ints(0, 20).distinct().limit(2)::toArray).distinct().;
+		
 		Player[] pairs = new Player[playerNum];
-		for (int i = 0; i < playerNum; i++) {
-			int[] arr = new Random().ints(0, 20).distinct().limit(2).toArray();
-			pairs[i] = new Player(deck[arr[0]], deck[arr[1]]);
+		int[] arr = new Random().ints(0, 20).distinct().limit(2 * playerNum).toArray();
+		for (int i = 0; i < 2 * playerNum; i += 2) {
+			pairs[i / 2] = new Player(deck[arr[i]], deck[arr[i + 1]]);
 		}
 		return pairs;
 	}
@@ -85,7 +103,7 @@ public class Main {
 class Card {
 	
 	public final int num;
-	public final int type; //0 is normal, 1 is special(�뿴�걮 + 1, 3愿�)
+	public final int type; //0 is normal, 1 is special(열끗 + 1, 3광)
 	
 	public Card(int n, int t) { num = n; type = t; }
 	public String getGenealogy() {
