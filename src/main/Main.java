@@ -37,7 +37,6 @@ public class Main {
 	
 	public static void main(String[] args) {
 
-		//TODO : saguLimit에 따른 확률? 
 		start();
 		/*System.out.println(new PMangGame(new Player[] {
 				new Player(new Card(3, 1), new Card(8, 1)),
